@@ -6,6 +6,7 @@ import {
   FormControl,
   Select,
   InputLabel,
+  Button,
   SelectChangeEvent,
 } from "@mui/material";
 
@@ -44,8 +45,19 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ onStart }) => {
           onChange={handleMazeTypeChange}
         >
           <MenuItem value="grid">Grid</MenuItem>
+          <MenuItem value="square">Square</MenuItem>
+          <MenuItem value="hexagonal">Hexagonal</MenuItem>
+          <MenuItem value="triangular">Triangular</MenuItem>
+          <MenuItem value="circular">Circular</MenuItem>
         </Select>
       </FormControl>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => onStart(mazeType)}
+      >
+        Start Game
+      </Button>
     </Box>
   );
 };
