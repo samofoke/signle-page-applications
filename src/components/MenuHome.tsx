@@ -28,7 +28,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ onStart }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        height: "100vh",
+        minHeight: "30vh",
         padding: "20px",
       }}
     >
