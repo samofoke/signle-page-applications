@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { generateDFSGridMaze } from "../../algorithms/Grid/GridMazeDFS";
+// import { generateKruskalMaze } from "../../algorithms/Grid/GridMazeK";
 import MenuComponent from "../MenuHome";
 import MazeBoard from "../Maze/MazeBoard";
 
