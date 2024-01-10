@@ -13,17 +13,18 @@ export const generateDFSGridMaze = (
 ): number[][] => {
   let maze = Array.from({ length: height }, () => Array(width).fill(1));
 
-  const entrance = [
-    Math.floor(Math.random() * height),
-    Math.floor(Math.random() * width),
-  ];
-  let exit;
+  let entrance: [number, number], exit: [number, number];
+
   do {
+    entrance = [
+      Math.floor(Math.random() * height),
+      Math.floor(Math.random() * width),
+    ];
     exit = [
       Math.floor(Math.random() * height),
       Math.floor(Math.random() * width),
     ];
-  } while (entrance[0] === exit[0] && entrance[1] === exit[1]);
+  } while (distanceTooClose(entrance, exit, Math.min(width, height) / 3));
 
   let stack = [entrance];
 
@@ -71,4 +72,15 @@ export const generateDFSGridMaze = (
   maze[exit[0]][exit[1]] = 3;
 
   return maze;
+};
+
+const distanceTooClose = (
+  point1: [number, number],
+  point2: [number, number],
+  minDistance: number
+): boolean => {
+  const [y1, x1] = point1;
+  const [y2, x2] = point2;
+  const distance = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+  return distance < minDistance;
 };
