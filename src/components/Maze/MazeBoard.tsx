@@ -57,7 +57,14 @@ const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
   };
 
   const getCellColor = (cell: number) => {
-    return cell === 2 ? "green" : cell === 3 ? "red" : "transparent";
+    if (cell === 1) {
+      return "#525252";
+    } else if (cell === 2) {
+      return "green";
+    } else if (cell === 3) {
+      return "red";
+    }
+    return "transparent";
   };
 
   console.log("The Maze: ", maze);
