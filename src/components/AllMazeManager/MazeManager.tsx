@@ -1,94 +1,57 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
-import { generateDFSGridMaze } from "../../algorithms/Grid/GridMazeDFS";
-import { generateKruskalMaze } from "../../algorithms/Grid/GridMazeK";
+import {
+  generateDFSGridMaze,
+  isPathInMazeDFS,
+} from "../../algorithms/Grid/GridMazeDFS";
+import {
+  generateKruskalMaze,
+  isPathInMazeKruskal,
+  isMazeFullyConnected,
+} from "../../algorithms/Grid/GridMazeK";
 import MenuComponent from "../MenuHome";
 import MazeBoard from "../Maze/MazeBoard";
 
 const MazeManager: React.FC = () => {
   const [maze, setMaze] = useState<number[][]>([]);
 
-  // const findCellWithValue = (maze: number[][], value: number): Cell | null => {
-  //   for (let row = 0; row < maze.length; row++) {
-  //     for (let col = 0; col < maze[0].length; col++) {
-  //       if (maze[row][col] === value) {
-  //         return { row, col };
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // };
-
-  // const isPathInMaze = (maze: number[][], start: Cell, end: Cell): boolean => {
-  //   const rows = maze.length;
-  //   const cols = maze[0].length;
-  //   const visited: boolean[][] = Array.from({ length: rows }, () =>
-  //     Array(cols).fill(false)
-  //   );
-  //   const stack: Cell[] = [start];
-
-  //   while (stack.length > 0) {
-  //     const { row, col } = stack.pop()!;
-  //     if (row === end.row && col === end.col) {
-  //       return true; // Path found
-  //     }
-
-  //     // Mark as visited
-  //     visited[row][col] = true;
-
-  //     // Add adjacent cells to stack if they are not walls and not visited
-  //     const directions = [
-  //       [1, 0],
-  //       [0, 1],
-  //       [-1, 0],
-  //       [0, -1],
-  //     ];
-  //     for (const [dr, dc] of directions) {
-  //       const newRow = row + dr;
-  //       const newCol = col + dc;
-  //       if (
-  //         newRow >= 0 &&
-  //         newRow < rows &&
-  //         newCol >= 0 &&
-  //         newCol < cols &&
-  //         maze[newRow][newCol] === 0 &&
-  //         !visited[newRow][newCol]
-  //       ) {
-  //         stack.push({ row: newRow, col: newCol });
-  //       }
-  //     }
-  //   }
-
-  //   return false; // No path found
-  // };
-
   const handleStartGame = (selectMazeType: string) => {
-    let isValidMaze = false;
     let newMaze: number[][] = [];
-    while (!isValidMaze) {
-      if (selectMazeType === "grid") {
-        const gridGenerator = [generateDFSGridMaze, generateKruskalMaze];
-        const generateMaze =
-          gridGenerator[Math.floor(Math.random() * gridGenerator.length)];
-        newMaze = generateMaze(10, 10);
+    let entrance, exit;
 
-        // Dynamically find the entrance and exit
-        // const entrance = findCellWithValue(newMaze, 2);
-        // const exit = findCellWithValue(newMaze, 3);
+    do {
+      const generateMaze =
+        Math.random() < 0.5 ? generateDFSGridMaze : generateKruskalMaze;
+      newMaze = generateMaze(20, 20);
 
-        // if (entrance && exit) {
-        //   isValidMaze = isPathInMaze(newMaze, entrance, exit);
-        // }
+      entrance = findCellWithValue(newMaze, 2); 
+      exit = findCellWithValue(newMaze, 3);
+
+      // For Kruskal-generated mazes, check if the maze is fully connected
+      if (
+        generateMaze === generateKruskalMaze &&
+        !isMazeFullyConnected(newMaze)
+      ) {
+        console.error("Invalid Kruskal maze generated, regenerating...");
+        continue;
       }
 
-      if (!isValidMaze) {
-        console.error("Invalid maze generated, regenerating...");
-        // Optionally, you can add a delay here if needed to prevent rapid regeneration
+      // Check if a valid path exists in the maze
+      if (
+        entrance &&
+        exit &&
+        (generateMaze === generateDFSGridMaze
+          ? isPathInMazeDFS(newMaze, entrance, exit)
+          : isPathInMazeKruskal(newMaze, entrance, exit))
+      ) {
+        setMaze(newMaze);
+        break;
       }
-    }
 
-    setMaze(newMaze);
+      console.error("Invalid maze generated, regenerating...");
+    } while (true);
   };
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -100,3 +63,15 @@ const MazeManager: React.FC = () => {
 };
 
 export default MazeManager;
+
+// Helper function to find a cell with a specific value (2 for entrance, 3 for exit)
+function findCellWithValue(maze: number[][], value: number) {
+  for (let row = 0; row < maze.length; row++) {
+    for (let col = 0; col < maze[row].length; col++) {
+      if (maze[row][col] === value) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}

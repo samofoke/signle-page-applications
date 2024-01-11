@@ -67,7 +67,7 @@ const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
     return "transparent";
   };
 
-  console.log("The Maze: ", maze);
+  // console.log("The Maze: ", maze);
 
   return (
     <Box

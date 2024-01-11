@@ -71,6 +71,8 @@ export const generateDFSGridMaze = (
   maze[entrance[0]][entrance[1]] = 2;
   maze[exit[0]][exit[1]] = 3;
 
+  // console.log("dfs maze: ", maze);
+
   return maze;
 };
 
@@ -83,4 +85,60 @@ const distanceTooClose = (
   const [y2, x2] = point2;
   const distance = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
   return distance < minDistance;
+};
+
+type Cell = { row: number; col: number };
+
+export const isPathInMazeDFS = (
+  maze: number[][],
+  start: Cell,
+  end: Cell
+): boolean => {
+  const rows = maze.length;
+  const cols = maze[0].length;
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array(cols).fill(false)
+  );
+
+  function dfs(cell: Cell): boolean {
+    const { row, col } = cell;
+
+    // Check for bounds and if the cell is already visited or is a wall
+    if (
+      row < 0 ||
+      col < 0 ||
+      row >= rows ||
+      col >= cols ||
+      visited[row][col] ||
+      maze[row][col] === 1
+    ) {
+      return false;
+    }
+
+    // Check if the exit is reached
+    if (row === end.row && col === end.col) {
+      return true;
+    }
+
+    visited[row][col] = true;
+
+    // Explore all four directions
+    const directions = [
+      [1, 0],
+      [0, 1],
+      [-1, 0],
+      [0, -1],
+    ];
+    for (const [dr, dc] of directions) {
+      const newRow = row + dr;
+      const newCol = col + dc;
+      if (dfs({ row: newRow, col: newCol })) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return dfs(start);
 };

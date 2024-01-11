@@ -1,14 +1,10 @@
-// TypeScript Implementation for Kruskal's Algorithm in Maze Generation
-
-// Type definition for a Cell in the maze
+// Cell and Edge types
 type Cell = { row: number; col: number };
-
-// Type definition for an Edge between two Cells
 type Edge = { cell1: Cell; cell2: Cell };
 
-// DisjointSet class to manage union-find operations
+// DisjointSet class
 class DisjointSet {
-  private parent: Record<string, Cell>;
+  private parent: Record<string, string>;
   private rank: Record<string, number>;
 
   constructor() {
@@ -16,63 +12,56 @@ class DisjointSet {
     this.rank = {};
   }
 
-  // Create a set with a single element
   makeSet(cell: Cell): void {
-    const id = `${cell.row}-${cell.col}`;
-    this.parent[id] = cell;
+    const id = this.cellId(cell);
+    this.parent[id] = id;
     this.rank[id] = 0;
   }
 
-  // Find the root of the set that a cell belongs to
-  find(cell: Cell): Cell {
-    const id = `${cell.row}-${cell.col}`;
-    if (this.parent[id] !== cell) {
-      this.parent[id] = this.find(this.parent[id]);
+  find(cell: Cell): string {
+    const id = this.cellId(cell);
+    if (this.parent[id] !== id) {
+      this.parent[id] = this.find({
+        row: parseInt(this.parent[id].split("-")[0]),
+        col: parseInt(this.parent[id].split("-")[1]),
+      });
     }
     return this.parent[id];
   }
 
-  // Union two sets
   union(cell1: Cell, cell2: Cell): void {
-    const id1 = `${cell1.row}-${cell1.col}`;
-    const id2 = `${cell2.row}-${cell2.col}`;
+    const id1 = this.find(cell1);
+    const id2 = this.find(cell2);
 
-    const parent1 = this.find(cell1);
-    const parent2 = this.find(cell2);
+    if (id1 === id2) return;
 
-    const parentId1 = `${parent1.row}-${parent1.col}`;
-    const parentId2 = `${parent2.row}-${parent2.col}`;
-
-    if (parentId1 === parentId2) {
-      return; // They are already in the same set
-    }
-
-    // Union by rank
-    if (this.rank[parentId1] > this.rank[parentId2]) {
-      this.parent[parentId2] = parent1;
-    } else if (this.rank[parentId1] < this.rank[parentId2]) {
-      this.parent[parentId1] = parent2;
+    if (this.rank[id1] > this.rank[id2]) {
+      this.parent[id2] = id1;
+    } else if (this.rank[id1] < this.rank[id2]) {
+      this.parent[id1] = id2;
     } else {
-      this.parent[parentId2] = parent1;
-      this.rank[parentId1] += 1;
+      this.parent[id2] = id1;
+      this.rank[id1]++;
     }
+  }
+
+  private cellId(cell: Cell): string {
+    return `${cell.row}-${cell.col}`;
   }
 }
 
-// Function to generate a maze using Kruskal's algorithm
 export function generateKruskalMaze(rows: number, cols: number): number[][] {
-  // Initialize maze with walls (1)
   const maze = Array.from({ length: rows }, () => Array(cols).fill(1));
-
-  // Initialize Disjoint Set
   const ds = new DisjointSet();
+
+  // Initialize disjoint sets for each cell
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       ds.makeSet({ row, col });
     }
   }
 
-  // Create list of all possible edges
+  // Generate edges between adjacent cells
   let edges: Edge[] = [];
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -85,32 +74,110 @@ export function generateKruskalMaze(rows: number, cols: number): number[][] {
     }
   }
 
-  // Shuffle edges for randomness
-  edges = edges.sort(() => Math.random() - 0.5);
-
-  // Apply Kruskal's Algorithm to build the maze
-  edges.forEach((edge) => {
-    const { cell1, cell2 } = edge;
-    if (
-      ds.find(cell1).row !== ds.find(cell2).row ||
-      ds.find(cell1).col !== ds.find(cell2).col
-    ) {
+  // Randomly sort edges and use them to build the maze
+  edges.sort(() => Math.random() - 0.5);
+  edges.forEach(({ cell1, cell2 }) => {
+    if (ds.find(cell1) !== ds.find(cell2)) {
       ds.union(cell1, cell2);
 
-      // Remove the wall between cells
-      maze[cell1.row][cell1.col] = 0;
-      maze[cell2.row][cell2.col] = 0;
       if (cell1.row === cell2.row) {
-        // Horizontal adjacent cells - no need for rounding
-        maze[cell1.row][(cell1.col + cell2.col) / 2] = 0;
+        maze[cell1.row][Math.floor((cell1.col + cell2.col) / 2)] = 0;
       } else {
-        // Vertical adjacent cells - use the row of either cell1 or cell2
-        maze[cell1.row][cell1.col] = 0; // This line might be redundant
-        maze[cell2.row][cell1.col] = 0;
+        maze[Math.floor((cell1.row + cell2.row) / 2)][cell1.col] = 0;
       }
     }
-    console.log("Edges: ", edge);
   });
 
+  // Add random entrance and exit
+  const entrance = { row: 0, col: Math.floor(Math.random() * cols) };
+  const exit = { row: rows - 1, col: Math.floor(Math.random() * cols) };
+  maze[entrance.row][entrance.col] = 2;
+  maze[exit.row][exit.col] = 3;
+
   return maze;
+}
+
+export function isPathInMazeKruskal(
+  maze: number[][],
+  start: Cell,
+  end: Cell
+): boolean {
+  const rows = maze.length;
+  const cols = maze[0].length;
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array(cols).fill(false)
+  );
+
+  function dfs(cell: Cell): boolean {
+    const { row, col } = cell;
+    if (
+      row < 0 ||
+      row >= rows ||
+      col < 0 ||
+      col >= cols ||
+      visited[row][col] ||
+      maze[row][col] === 1
+    )
+      return false;
+    if (row === end.row && col === end.col) return true;
+
+    visited[row][col] = true;
+    return (
+      dfs({ row: row + 1, col }) ||
+      dfs({ row: row - 1, col }) ||
+      dfs({ row, col: col + 1 }) ||
+      dfs({ row, col: col - 1 })
+    );
+  }
+
+  return dfs(start);
+}
+
+export function isMazeFullyConnected(maze: number[][]): boolean {
+  const rows = maze.length;
+  const cols = maze[0].length;
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array(cols).fill(false)
+  );
+
+  function dfs(row: number, col: number): void {
+    if (
+      row < 0 ||
+      row >= rows ||
+      col < 0 ||
+      col >= cols ||
+      visited[row][col] ||
+      maze[row][col] === 1
+    ) {
+      return;
+    }
+
+    visited[row][col] = true;
+    dfs(row + 1, col);
+    dfs(row - 1, col);
+    dfs(row, col + 1);
+    dfs(row, col - 1);
+  }
+
+  // Find a starting cell for DFS and perform DFS
+  let startFound = false;
+  for (let row = 0; row < rows && !startFound; row++) {
+    for (let col = 0; col < cols && !startFound; col++) {
+      if (maze[row][col] !== 1) {
+        dfs(row, col);
+        startFound = true; // Break out of the nested loop
+      }
+    }
+  }
+
+  // Check if all non-wall cells are visited
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (maze[row][col] !== 1 && !visited[row][col]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
