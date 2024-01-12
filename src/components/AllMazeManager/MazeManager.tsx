@@ -5,6 +5,10 @@ import {
   isPathInMazeDFS,
 } from "../../algorithms/Grid/GridMazeDFS";
 import {
+  generatePrimsMaze,
+  isPathInMazePrims,
+} from "../../algorithms/Grid/GridMazePrims";
+import {
   generateKruskalMaze,
   isPathInMazeKruskal,
   isMazeFullyConnected,
@@ -14,44 +18,62 @@ import MazeBoard from "../Maze/MazeBoard";
 
 const MazeManager: React.FC = () => {
   const [maze, setMaze] = useState<number[][]>([]);
+  const [error, setError] = useState<string>("");
 
   const handleStartGame = (selectMazeType: string) => {
     let newMaze: number[][] = [];
-    let entrance, exit;
 
-    do {
-      const generateMaze =
-        Math.random() < 0.5 ? generateDFSGridMaze : generateKruskalMaze;
-      newMaze = generateMaze(20, 20);
-
-      entrance = findCellWithValue(newMaze, 2); 
-      exit = findCellWithValue(newMaze, 3);
-
-      // For Kruskal-generated mazes, check if the maze is fully connected
-      if (
-        generateMaze === generateKruskalMaze &&
-        !isMazeFullyConnected(newMaze)
-      ) {
-        console.error("Invalid Kruskal maze generated, regenerating...");
-        continue;
-      }
-
-      // Check if a valid path exists in the maze
-      if (
-        entrance &&
-        exit &&
-        (generateMaze === generateDFSGridMaze
-          ? isPathInMazeDFS(newMaze, entrance, exit)
-          : isPathInMazeKruskal(newMaze, entrance, exit))
-      ) {
-        setMaze(newMaze);
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let generateMaze;
+      if (selectMazeType === "grid") {
+        const gridMazeSelector = [
+          generateDFSGridMaze,
+          generateKruskalMaze,
+          generatePrimsMaze,
+        ];
+        generateMaze =
+          gridMazeSelector[Math.floor(Math.random() * gridMazeSelector.length)];
+      } else {
+        setError(`Maze type ${selectMazeType} is not implemented.`);
         break;
       }
 
-      console.error("Invalid maze generated, regenerating...");
-    } while (true);
+      newMaze = generateMaze(20, 20);
+      const entrance = findCellWithValue(newMaze, 2);
+      const exit = findCellWithValue(newMaze, 3);
+
+      if (!entrance || !exit) {
+        console.error("Entrance or exit not found, regenerating...");
+        continue;
+      }
+
+      let isPathValid = false;
+      if (generateMaze === generateDFSGridMaze) {
+        isPathValid = isPathInMazeDFS(newMaze, entrance, exit);
+      } else if (generateMaze === generateKruskalMaze) {
+        if (!isMazeFullyConnected(newMaze)) {
+          console.error("Invalid Kruskal maze generated, regenerating...");
+          continue;
+        }
+        isPathValid = isPathInMazeKruskal(newMaze, entrance, exit);
+      } else if (generateMaze === generatePrimsMaze) {
+        isPathValid = isPathInMazePrims(newMaze, entrance, exit);
+      }
+
+      if (isPathValid) {
+        setMaze(newMaze);
+        return;
+      }
+    }
+
+    if (!error) {
+      setError("Failed to generate a valid maze after multiple attempts.");
+    }
   };
 
+  if (error) {
+    return <Box>Error: {error}</Box>;
+  }
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
