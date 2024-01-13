@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import { Box } from "@mui/material";
 
 interface MazeBoardProps {
@@ -6,85 +6,89 @@ interface MazeBoardProps {
 }
 
 const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
-  const shouldRenderWall = (y: number, x: number) => {
-    if (y < 0 || y >= maze.length || x < 0 || x >= maze[0].length) return true;
-    return maze[y][x] === 1;
+  // Checks if the cell at (y, x) is a wall (1)
+  const isWall = (y: number, x: number) => maze[y] && maze[y][x] === 1;
+
+  // Generates a line based on the position and the presence of a wall
+  const getLine = (
+    y: number,
+    x: number,
+    position: "top" | "right" | "bottom" | "left"
+  ) => {
+    const style: CSSProperties = {
+      position: "absolute",
+      backgroundColor: "black",
+    };
+
+    switch (position) {
+      case "top":
+        style.top = 0;
+        style.left = 0;
+        style.right = 0;
+        style.height = "2px";
+        if (y === 0 || isWall(y - 1, x)) return <div style={style} />;
+        break;
+      case "right":
+        style.top = 0;
+        style.bottom = 0;
+        style.right = 0;
+        style.width = "2px";
+        if (x === maze[0].length - 1 || isWall(y, x + 1))
+          return <div style={style} />;
+        break;
+      case "bottom":
+        style.bottom = 0;
+        style.left = 0;
+        style.right = 0;
+        style.height = "2px";
+        if (y === maze.length - 1 || isWall(y + 1, x))
+          return <div style={style} />;
+        break;
+      case "left":
+        style.top = 0;
+        style.bottom = 0;
+        style.left = 0;
+        style.width = "2px";
+        if (x === 0 || isWall(y, x - 1)) return <div style={style} />;
+        break;
+      default:
+        return null;
+    }
   };
 
-  const getCellStyle = (cell: number) => {
-    return cell === 2
-      ? "green"
-      : cell === 3
-      ? "red"
-      : cell === 1
-      ? "#525252"
-      : "transparent";
+  const getCellColor = (cell: number) => {
+    if (cell === 1) {
+      return "#525252";
+    } else if (cell === 2) {
+      return "green";
+    } else if (cell === 3) {
+      return "red";
+    }
+    return "transparent";
   };
+
+  // console.log("The Maze: ", maze);
 
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {maze.map((row, rowIndex) => (
-        <div key={rowIndex} style={{ display: "flex" }}>
-          {row.map((cell, cellIndex) => (
+      {maze.map((row, y) => (
+        <div key={y} style={{ display: "flex" }}>
+          {row.map((cell, x) => (
             <div
-              key={cellIndex}
+              key={x}
               style={{
                 position: "relative",
-                width: "2vw",
-                height: "2vw",
-                backgroundColor: getCellStyle(cell),
+                width: "20px",
+                height: "20px",
+                backgroundColor: getCellColor(cell),
               }}
             >
-              {shouldRenderWall(rowIndex - 1, cellIndex) && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: "2px",
-                    backgroundColor: "black",
-                  }}
-                />
-              )}
-              {shouldRenderWall(rowIndex, cellIndex - 1) && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    width: "2px",
-                    backgroundColor: "black",
-                  }}
-                />
-              )}
-              {shouldRenderWall(rowIndex + 1, cellIndex) && (
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "2px",
-                    backgroundColor: "black",
-                  }}
-                />
-              )}
-              {shouldRenderWall(rowIndex, cellIndex + 1) && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    right: 0,
-                    width: "2px",
-                    backgroundColor: "black",
-                  }}
-                />
-              )}
+              {getLine(y, x, "top")}
+              {getLine(y, x, "right")}
+              {getLine(y, x, "bottom")}
+              {getLine(y, x, "left")}
             </div>
           ))}
         </div>
