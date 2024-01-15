@@ -13,6 +13,10 @@ import {
   isPathInMazeKruskal,
   isMazeFullyConnected,
 } from "../../algorithms/Grid/GridMazeK";
+import {
+  generateBinaryTreeMaze,
+  isPathInMazeTree,
+} from "../../algorithms/Grid/GridBinaryTree";
 import MenuComponent from "../MenuHome";
 import MazeBoard from "../Maze/MazeBoard";
 
@@ -27,9 +31,10 @@ const MazeManager: React.FC = () => {
       let generateMaze;
       if (selectMazeType === "grid") {
         const gridMazeSelector = [
-          generateDFSGridMaze,
-          generateKruskalMaze,
-          generatePrimsMaze,
+          // generateDFSGridMaze,
+          // generateKruskalMaze,
+          // generatePrimsMaze,
+          generateBinaryTreeMaze,
         ];
         generateMaze =
           gridMazeSelector[Math.floor(Math.random() * gridMazeSelector.length)];
@@ -58,6 +63,8 @@ const MazeManager: React.FC = () => {
         isPathValid = isPathInMazeKruskal(newMaze, entrance, exit);
       } else if (generateMaze === generatePrimsMaze) {
         isPathValid = isPathInMazePrims(newMaze, entrance, exit);
+      } else if (generateMaze === generateBinaryTreeMaze) {
+        isPathValid = isPathInMazeTree(newMaze, entrance, exit);
       }
 
       if (isPathValid) {
