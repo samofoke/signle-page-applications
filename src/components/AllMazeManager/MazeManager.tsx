@@ -31,9 +31,9 @@ const MazeManager: React.FC = () => {
       let generateMaze;
       if (selectMazeType === "grid") {
         const gridMazeSelector = [
-          // generateDFSGridMaze,
-          // generateKruskalMaze,
-          // generatePrimsMaze,
+          generateDFSGridMaze,
+          generateKruskalMaze,
+          generatePrimsMaze,
           generateBinaryTreeMaze,
         ];
         generateMaze =

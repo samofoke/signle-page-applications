@@ -64,25 +64,27 @@ export const generateBinaryTreeMaze = (
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      let directions: [number, number][] = [];
+      // Determine carving direction
+      let carveEast = false;
+      let carveSouth = false;
 
-      // Add south neighbor if not on the bottom edge
-      if (y < height - 1) {
-        directions.push([y + 1, x]);
+      if (x === width - 1 && y < height - 1) {
+        // If on the rightmost column, can only carve south
+        carveSouth = true;
+      } else if (y === height - 1 && x < width - 1) {
+        // If on the bottom row, can only carve east
+        carveEast = true;
+      } else if (x < width - 1 && y < height - 1) {
+        // Randomly decide to carve east or south
+        carveEast = Math.random() < 0.5;
+        carveSouth = !carveEast;
       }
 
-      // Add east neighbor if not on the right edge
-      if (x < width - 1) {
-        directions.push([y, x + 1]);
-      }
-
-      // Randomly select either south or east (or none if on the bottom right corner)
-      if (directions.length > 0) {
-        const [ny, nx] =
-          directions[Math.floor(Math.random() * directions.length)];
-        // Carve the path between the current cell and the chosen direction
-        maze[y][x] = 0; // Clear the current cell
-        maze[ny][nx] = 0; // Clear the chosen neighboring cell
+      // Carve the path
+      if (carveEast) {
+        maze[y][x + 1] = 0;
+      } else if (carveSouth) {
+        maze[y + 1][x] = 0;
       }
     }
   }
@@ -92,11 +94,11 @@ export const generateBinaryTreeMaze = (
   do {
     entrance = [
       Math.floor(Math.random() * height),
-      Math.floor(Math.random() * width),
+      0, // Ensure entrance is on the left edge
     ];
     exit = [
       Math.floor(Math.random() * height),
-      Math.floor(Math.random() * width),
+      width - 1, // Ensure exit is on the right edge
     ];
   } while (distanceTooClose(entrance, exit, Math.min(width, height) / 3));
 
