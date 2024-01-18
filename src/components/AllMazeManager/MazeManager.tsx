@@ -29,6 +29,10 @@ const MazeManager: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   const handleStartGame = (selectMazeType: string) => {
+    setError("");
+    setMaze([]);
+    setSolutionPath([]);
+
     let newMaze: number[][] = [];
 
     for (let attempt = 0; attempt < 10; attempt++) {
@@ -75,6 +79,7 @@ const MazeManager: React.FC = () => {
         setMaze(newMaze);
         const entrance = findCellWithValue(newMaze, 2);
         const exit = findCellWithValue(newMaze, 3);
+        console.log("new maze: ", newMaze);
 
         if (entrance && exit) {
           setSolutionPath([]);
@@ -88,8 +93,11 @@ const MazeManager: React.FC = () => {
     }
   };
 
-  const handleSolve = (path: Cell[]) => {
-    setSolutionPath(path);
+  const handleSolve = (newPath: Cell[]) => {
+    if (JSON.stringify(newPath) !== JSON.stringify(solutionPath)) {
+      setSolutionPath(newPath);
+      console.log("a new path: ", newPath);
+    }
   };
 
   if (error) {

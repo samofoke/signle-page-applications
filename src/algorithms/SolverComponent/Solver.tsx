@@ -15,30 +15,31 @@ type SolverProps = {
 
 const SolverMaze = memo(({ maze, start, end, onSolve }: SolverProps) => {
   const [algorithm, setAlgorithm] = useState<"DFS" | "BFS" | "">("");
-  let path: Cell[] = [];
+  const [isSolutionFound, setSolutionFound] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (maze.length > 0 && start && end) {
-      setAlgorithm(Math.random() < 0.5 ? "DFS" : "BFS");
-    }
-  }, [maze, start, end]);
+      const chosenAlgorithm = Math.random() < 0.5 ? "DFS" : "BFS";
+      setAlgorithm(chosenAlgorithm);
 
-  useEffect(() => {
-    let path: Cell[] = [];
-    if (algorithm === "DFS") {
-      path = solveDepthFirstSearch(maze, start, end);
+      let path: Cell[] = [];
+      if (algorithm === "DFS") {
+        path = solveDepthFirstSearch(maze, start, end);
+      }
+      setSolutionFound(path.length > 0);
+      onSolve(path);
     }
-
-    onSolve(path);
-  }, [algorithm, maze, start, end, onSolve]);
+  }, [maze, start, end, onSolve, algorithm]);
 
   return (
     <div>
-      {path.length > 0 ? (
-        <p>Solution found using {algorithm}</p>
-      ) : (
-        <p>No Solution found</p>
-      )}
+      {algorithm &&
+        isSolutionFound !== null &&
+        (isSolutionFound ? (
+          <p>Solution found using {algorithm}.</p>
+        ) : (
+          <p>No Solution was found using {algorithm}.</p>
+        ))}
     </div>
   );
 });

@@ -68,7 +68,7 @@ const MazeBoard: React.FC<MazeBoardProps> = ({ maze, solutionPath }) => {
     if (cell === 1) {
       return "#525252";
     } else if (isPathSolution(y, x)) {
-      return "yellow";
+      return "#F29727";
     } else if (cell === 2) {
       return "green";
     } else if (cell === 3) {
