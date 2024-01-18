@@ -45,7 +45,7 @@ export const solveDepthFirstSearch = (
   };
 
   dfs(start);
-
+  console.log("the paths: ", path);
   return path.reverse();
 };
 

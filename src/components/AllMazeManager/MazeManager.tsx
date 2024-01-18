@@ -17,11 +17,15 @@ import {
   generateBinaryTreeMaze,
   isPathInMazeTree,
 } from "../../algorithms/Grid/GridBinaryTree";
+import SolverMaze from "../../algorithms/SolverComponent/Solver";
 import MenuComponent from "../MenuHome";
 import MazeBoard from "../Maze/MazeBoard";
 
+type Cell = { row: number; col: number };
+
 const MazeManager: React.FC = () => {
   const [maze, setMaze] = useState<number[][]>([]);
+  const [solutionPath, setSolutionPath] = useState<Cell[]>([]);
   const [error, setError] = useState<string>("");
 
   const handleStartGame = (selectMazeType: string) => {
@@ -69,13 +73,23 @@ const MazeManager: React.FC = () => {
 
       if (isPathValid) {
         setMaze(newMaze);
-        return;
+        const entrance = findCellWithValue(newMaze, 2);
+        const exit = findCellWithValue(newMaze, 3);
+
+        if (entrance && exit) {
+          setSolutionPath([]);
+          return;
+        }
       }
     }
 
     if (!error) {
       setError("Failed to generate a valid maze after multiple attempts.");
     }
+  };
+
+  const handleSolve = (path: Cell[]) => {
+    setSolutionPath(path);
   };
 
   if (error) {
@@ -86,7 +100,17 @@ const MazeManager: React.FC = () => {
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <MenuComponent onStart={handleStartGame} />
-      <MazeBoard maze={maze} />
+      {maze.length > 0 && (
+        <>
+          <SolverMaze
+            maze={maze}
+            start={findCellWithValue(maze, 2)}
+            end={findCellWithValue(maze, 3)}
+            onSolve={handleSolve}
+          />
+          <MazeBoard maze={maze} solutionPath={solutionPath} />
+        </>
+      )}
     </Box>
   );
 };
@@ -94,7 +118,7 @@ const MazeManager: React.FC = () => {
 export default MazeManager;
 
 // Helper function to find a cell with a specific value (2 for entrance, 3 for exit)
-function findCellWithValue(maze: number[][], value: number) {
+function findCellWithValue(maze: number[][], value: number): Cell {
   for (let row = 0; row < maze.length; row++) {
     for (let col = 0; col < maze[row].length; col++) {
       if (maze[row][col] === value) {
@@ -102,5 +126,5 @@ function findCellWithValue(maze: number[][], value: number) {
       }
     }
   }
-  return null;
+  return { row: 0, col: 0 };
 }
