@@ -105,7 +105,6 @@ export const generateBinaryTreeMaze = (
   maze[entrance[0]][entrance[1]] = 2; // Mark entrance
   maze[exit[0]][exit[1]] = 3; // Mark exit
 
-  console.log("binary maze: ", maze);
   return maze;
 };
 
