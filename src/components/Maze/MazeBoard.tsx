@@ -1,11 +1,13 @@
 import React, { CSSProperties } from "react";
 import { Box } from "@mui/material";
 
+type Cell = { row: number; col: number };
 interface MazeBoardProps {
   maze: number[][];
+  solutionPath?: Cell[];
 }
 
-const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
+const MazeBoard: React.FC<MazeBoardProps> = ({ maze, solutionPath }) => {
   // Checks if the cell at (y, x) is a wall (1)
   const isWall = (y: number, x: number) => maze[y] && maze[y][x] === 1;
 
@@ -56,9 +58,17 @@ const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
     }
   };
 
-  const getCellColor = (cell: number) => {
+  const isPathSolution = (y: number, x: number): boolean => {
+    return solutionPath
+      ? solutionPath.some((cell) => cell.row === y && cell.col === x)
+      : false;
+  };
+
+  const getCellColor = (y: number, x: number, cell: number) => {
     if (cell === 1) {
       return "#525252";
+    } else if (isPathSolution(y, x)) {
+      return "#F29727";
     } else if (cell === 2) {
       return "green";
     } else if (cell === 3) {
@@ -82,7 +92,7 @@ const MazeBoard: React.FC<MazeBoardProps> = ({ maze }) => {
                 position: "relative",
                 width: "20px",
                 height: "20px",
-                backgroundColor: getCellColor(cell),
+                backgroundColor: getCellColor(y, x, cell),
               }}
             >
               {getLine(y, x, "top")}
