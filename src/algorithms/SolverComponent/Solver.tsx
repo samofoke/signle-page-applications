@@ -1,5 +1,8 @@
 import React, { useState, useEffect, memo } from "react";
-import { solveDepthFirstSearch } from "./solvealgos/algorithmSolver";
+import {
+  solveDepthFirstSearch,
+  solveBreathFirstSearch,
+} from "./solvealgos/algorithmSolver";
 
 type Cell = {
   row: number;
@@ -23,8 +26,10 @@ const SolverMaze = memo(({ maze, start, end, onSolve }: SolverProps) => {
       setAlgorithm(chosenAlgorithm);
 
       let path: Cell[] = [];
-      if (algorithm === "DFS") {
+      if (chosenAlgorithm === "DFS") {
         path = solveDepthFirstSearch(maze, start, end);
+      } else if (chosenAlgorithm === "BFS") {
+        path = solveBreathFirstSearch(maze, start, end);
       }
       setSolutionFound(path.length > 0);
       onSolve(path);
