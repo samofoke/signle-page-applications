@@ -19,19 +19,18 @@ import {
 } from "../../algorithms/Grid/GridBinaryTree";
 import SolverMaze from "../../algorithms/SolverComponent/Solver";
 import MenuComponent from "../MenuHome";
-import MazeBoard from "../Maze/MazeBoard";
 
 type Cell = { row: number; col: number };
 
 const MazeManager: React.FC = () => {
   const [maze, setMaze] = useState<number[][]>([]);
-  const [solutionPath, setSolutionPath] = useState<Cell[]>([]);
   const [error, setError] = useState<string>("");
+  const [isSolving, setIsSolving] = useState<boolean>(false);
 
   const handleStartGame = (selectMazeType: string) => {
     setError("");
     setMaze([]);
-    setSolutionPath([]);
+    setIsSolving(false);
 
     let newMaze: number[][] = [];
 
@@ -77,13 +76,7 @@ const MazeManager: React.FC = () => {
 
       if (isPathValid) {
         setMaze(newMaze);
-        const entrance = findCellWithValue(newMaze, 2);
-        const exit = findCellWithValue(newMaze, 3);
-
-        if (entrance && exit) {
-          setSolutionPath([]);
-          return;
-        }
+        return;
       }
     }
 
@@ -92,15 +85,18 @@ const MazeManager: React.FC = () => {
     }
   };
 
-  const handleSolve = (newPath: Cell[]) => {
-    if (JSON.stringify(newPath) !== JSON.stringify(solutionPath)) {
-      setSolutionPath(newPath);
-    }
+  const hadnleSolve = (path: Cell[]): void => {
+    setIsSolving(true);
+    setTimeout(() => {
+      setMaze([]);
+      setIsSolving(false);
+    }, 5000);
   };
 
   if (error) {
     return <Box>Error: {error}</Box>;
   }
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -112,9 +108,9 @@ const MazeManager: React.FC = () => {
             maze={maze}
             start={findCellWithValue(maze, 2)}
             end={findCellWithValue(maze, 3)}
-            onSolve={handleSolve}
+            onSolve={hadnleSolve}
           />
-          <MazeBoard maze={maze} solutionPath={solutionPath} />
+          {isSolving && <Box>Resetting maze</Box>}
         </>
       )}
     </Box>
